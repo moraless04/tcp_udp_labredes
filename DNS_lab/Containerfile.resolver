@@ -1,0 +1,16 @@
+FROM debian:bookworm-slim
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        dnsutils \
+        unbound \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY config/unbound.conf /etc/unbound/unbound.conf
+
+EXPOSE 53/udp 53/tcp
+
+CMD ["/usr/sbin/unbound", "-d", "-c", "/etc/unbound/unbound.conf"]

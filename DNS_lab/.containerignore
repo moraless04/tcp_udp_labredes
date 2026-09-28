@@ -1,0 +1,10 @@
+*
+!.containerignore
+!Containerfile.client
+!Containerfile.monitor
+!Containerfile.resolver
+!config/
+!config/**
+!scripts/
+!scripts/monitor-entrypoint.sh
+!scripts/wait-for-x.sh

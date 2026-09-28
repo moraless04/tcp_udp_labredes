@@ -1,0 +1,43 @@
+FROM debian:bookworm-slim
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        dbus-x11 \
+        fonts-dejavu-core \
+        iproute2 \
+        libcap2-bin \
+        novnc \
+        openbox \
+        procps \
+        supervisor \
+        tini \
+        websockify \
+        wireshark \
+        x11-utils \
+        x11vnc \
+        xterm \
+        xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --shell /bin/bash --groups wireshark analyst \
+    && setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap
+
+COPY config/supervisord.conf /etc/supervisor/conf.d/dns-lab.conf
+COPY scripts/monitor-entrypoint.sh /usr/local/bin/monitor-entrypoint
+COPY scripts/wait-for-x.sh /usr/local/bin/wait-for-x
+
+RUN chmod 0755 /usr/local/bin/monitor-entrypoint /usr/local/bin/wait-for-x
+
+USER analyst
+ENV DISPLAY=:0 \
+    HOME=/home/analyst
+
+WORKDIR /home/analyst
+EXPOSE 6080
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/monitor-entrypoint"]
